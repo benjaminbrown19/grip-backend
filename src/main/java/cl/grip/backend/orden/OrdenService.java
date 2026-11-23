@@ -46,7 +46,7 @@ public class OrdenService {
 
     /**
      * Crea una venta interna. Este método se usa en /ordenes, endpoint protegido
-     * para administrador, vendedor o cliente autenticado.
+     * para administrador o vendedor autenticado.
      */
     @Transactional
     public OrdenApi.Respuesta crear(OrdenApi.Crear entrada) {

@@ -26,7 +26,7 @@ Swagger: http://localhost:8080/swagger-ui/index.html (botón Authorize: pegar el
 | GET `/productos`, GET `/productos/{codigo}` | Público |
 | POST `/productos`, PUT `/productos/{codigo}`, DELETE `/productos/{codigo}` | Administrador |
 | POST `/ordenes/checkout` | Público (compra de tienda, canal siempre `online`) |
-| POST `/ordenes` | Administrador (registro de venta en tienda, canal `online` o `vendedor`) |
+| POST `/ordenes` | Administrador o vendedor (registro de venta en tienda, canal `online` o `vendedor`) |
 | GET `/ordenes`, GET `/ordenes/{id}` | Administrador o vendedor |
 
 ## Seguridad

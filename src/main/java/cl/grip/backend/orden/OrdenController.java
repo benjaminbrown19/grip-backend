@@ -33,7 +33,7 @@ public class OrdenController {
         return ResponseEntity.created(URI.create("/api/v1/ordenes/" + creada.id())).body(creada);
     }
 
-    // Endpoint interno: requiere JWT de administrador, vendedor o cliente.
+    // Endpoint interno: requiere JWT de administrador o vendedor.
     @PostMapping
     public ResponseEntity<OrdenApi.Respuesta> crear(
             @Valid @RequestBody OrdenApi.Crear entrada) {
