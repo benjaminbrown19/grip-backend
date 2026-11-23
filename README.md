@@ -1,6 +1,6 @@
-# GRIP Sneaker Store — Backend Etapa 2
+# GRIP Sneaker Store - Backend
 
-Spring Boot 3.5.8, Java 25, Spring Web, Spring Data JPA, MySQL, Spring Security, JWT y Swagger.
+Spring Boot 3.5.8, Java 25, Spring Web, Spring Data JPA, MySQL, Spring Security, JWT y Swagger (springdoc).
 
 ## Variables necesarias (PowerShell, desde la carpeta grip-backend)
 
@@ -12,36 +12,35 @@ $env:GRIP_VENDEDOR_PASSWORD = Read-Host 'Clave inicial vendedor (minimo 8 caract
 .\mvnw.cmd spring-boot:run
 ```
 
-Usuarios iniciales (solo al primer arranque): `ana.perez@duoc.cl` administrador, `carlos.soto@duoc.cl` vendedor. Las claves NO están incluidas en el ZIP ni en GitHub. Cliente: POST `/api/v1/auth/registro`.
+Antes del primer arranque ejecutar `sql/01_usuario_mysql.sql` (reemplazando la clave). Después del primer arranque, `sql/02_productos_iniciales.sql` carga el catálogo.
 
-Swagger: http://localhost:8080/swagger-ui/index.html
+Si `GRIP_ADMIN_PASSWORD` o `GRIP_VENDEDOR_PASSWORD` no están definidas (o tienen menos de 8 caracteres), esas cuentas no se crean. Las claves NO se suben a GitHub.
 
-Endpoints: POST `/api/v1/auth/login`, `/registro`, `/refresh`; GET `/api/v1/productos`, GET `/{codigo}` (públicos); POST/PUT/DELETE productos (solo administrador con token Bearer).
+Swagger: http://localhost:8080/swagger-ui/index.html (botón Authorize: pegar el `accessToken` devuelto por login).
 
-JWT access caduca en 15 minutos; refresh en 7 días. El frontend debe renovar la sesión cuando sea necesario. Token de refresco generado y verificado, pero no hay lista de revocación: cerrar sesión elimina los tokens del cliente; para producción utilizar sesiones de refresh revocables / cookies HttpOnly, TLS y gestión de secretos.
+## Endpoints (prefijo `/api/v1`)
 
-La instalación se documenta directamente en el chat. No subir contraseñas ni secretos al repositorio. Esta etapa NO incluye API REST de órdenes ni pruebas de despliegue.
+| Método y ruta | Acceso |
+| --- | --- |
+| POST `/auth/login`, `/auth/registro`, `/auth/refresh` | Público (el registro crea siempre rol cliente) |
+| GET `/productos`, GET `/productos/{codigo}` | Público |
+| POST `/productos`, PUT `/productos/{codigo}`, DELETE `/productos/{codigo}` | Administrador |
+| POST `/ordenes/checkout` | Público (compra de tienda, canal siempre `online`) |
+| POST `/ordenes` | Administrador (registro de venta en tienda, canal `online` o `vendedor`) |
+| GET `/ordenes`, GET `/ordenes/{id}` | Administrador o vendedor |
 
+## Seguridad
 
-## Etapa 2B — órdenes (Anexo 1)
+- Contraseñas con BCrypt. Roles: `administrador`, `vendedor`, `cliente`.
+- JWT de acceso (15 min) y de refresco (7 días), firmados con HMAC. El rol se vuelve a leer desde la base de datos en cada solicitud.
+- `/auth/refresh` valida que el token sea de tipo `refresh` y emite un nuevo par de tokens. No hay lista de revocación: cerrar sesión elimina los tokens del cliente. En producción usar refresh revocable o cookies HttpOnly, TLS y gestión de secretos.
 
-- `GET /api/v1/ordenes`: listado. Requiere JWT con rol **administrador** o **vendedor**.
-- `GET /api/v1/ordenes/{id}`: detalle. Requiere JWT con rol **administrador** o **vendedor**.
-- `POST /api/v1/ordenes`: registra una orden desde el servidor para pruebas/flujo de compra; requiere rol **administrador** o **cliente**.
+## Órdenes
 
-Ejemplo de cuerpo JSON para POST (requiere que el producto `GRIP-PRUEBA` exista y tenga stock):
+La API calcula subtotales, descuento por cupón (`GRIP10`, `GRIP20`), envío y total con los precios guardados en MySQL; el cliente solo envía código y cantidad. La creación descuenta el stock dentro de una transacción con bloqueo de fila. El estado `registrada` o `pagada` no representa un cobro real. Las tablas `ordenes` y `orden_items` se crean con JPA (`ddl-auto=update`).
 
-```json
-{
-  "cliente": {"nombre": "Cliente", "apellidos": "Prueba", "correo": "cliente.prueba@gmail.com"},
-  "items": [{"codigo": "GRIP-PRUEBA", "cantidad": 1}]
-}
+## Pruebas
+
+```powershell
+.\mvnw.cmd test
 ```
-
-La API calcula los subtotales y el total usando precios persistidos en MySQL. La creación
-descuenta stock dentro de una transacción. La tabla `ordenes` y su detalle `orden_items`
-se crearán mediante JPA al iniciar con `spring.jpa.hibernate.ddl-auto=update`.
-
-**Pendiente de integración:** el frontend de la Etapa 3 todavía conserva `ordenesService`
-con `localStorage`; no se considera integrado el checkout hasta actualizar ese módulo.
-El estado `registrada` indica que la orden fue guardada; no representa un cobro real.

@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/ordenes/**")
                                 .hasAnyRole("ADMINISTRADOR", "VENDEDOR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/ordenes")
-                                .hasAnyRole("ADMINISTRADOR", "VENDEDOR")
+                                .hasRole("ADMINISTRADOR")
                         .requestMatchers("/api/v1/productos/**").hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated())
                 .addFilterBefore(
