@@ -1,36 +1,31 @@
-# GRIP — Inicio rápido con MySQL local (sin Docker)
+# GRIP — Inicio automatico con MySQL local (Windows 11, sin Docker)
 
-Esta guía es para los computadores que ya tienen MySQL Server instalado. No requiere Docker.
+## Requisitos
+- Windows 11, MySQL Server 8, JDK 25 y Node.js/npm.
+- Una cuenta administrativa MySQL con permisos CREATE, CREATE USER y GRANT OPTION.
+- MySQL Workbench es opcional.
 
-## Primera vez en cada computador
-
-1. Verificar que el servicio MySQL Server esté iniciado.
-2. Abrir MySQL Workbench y conectarse con una cuenta administradora.
-3. Abrir `sql/01_usuario_mysql.sql` y reemplazar `CAMBIAR_POR_CLAVE_PRIVADA` por la contraseña que utilizará la aplicación.
-4. Ejecutar el script una sola vez. Crea el usuario `grip_app` y los permisos necesarios. No crea la base de datos.
-5. Al iniciar Spring Boot, Connector/J crea automáticamente `grip_sneaker_store` si no existe; Hibernate crea las tablas y `ProductosIniciales` carga el catálogo si la tabla de productos está vacía.
-
-## Iniciar backend
-
-En PowerShell, dentro de la carpeta del backend:
+## Primera ejecucion y reinicios
+Abre PowerShell en la carpeta grip-backend y ejecuta:
 
 ```powershell
 $env:GRIP_DB_HOST = "localhost"
 $env:GRIP_DB_PORT = "3306"
 $env:GRIP_DB_NAME = "grip_sneaker_store"
-$env:GRIP_DB_USER = "grip_app"
-$env:GRIP_DB_PASSWORD = Read-Host 'Clave MySQL grip_app'
-$env:GRIP_JWT_SECRET = Read-Host 'Secreto JWT aleatorio de al menos 32 caracteres'
-$env:GRIP_ADMIN_PASSWORD = Read-Host 'Clave inicial administrador (mínimo 8 caracteres)'
-$env:GRIP_VENDEDOR_PASSWORD = Read-Host 'Clave inicial vendedor (mínimo 8 caracteres)'
+$env:GRIP_DB_ADMIN_USER = "root"
+$env:GRIP_DB_ADMIN_PASSWORD = Read-Host 'Clave administrativa MySQL'
+$env:GRIP_DB_PASSWORD = "12345678"
+$env:GRIP_JWT_SECRET = "GRIP_SECRET_KEY_2026_FULLSTACK_EVALUACION_3"
+$env:GRIP_ADMIN_PASSWORD = "12345678"
+$env:GRIP_VENDEDOR_PASSWORD = "12345678"
 .\mvnw.cmd spring-boot:run
 ```
 
-Esperar el mensaje de inicio correcto. Swagger: http://127.0.0.1:8080/swagger-ui/index.html
+El backend crea el esquema grip_sneaker_store, crea o actualiza el usuario grip_app y concede permisos solo sobre esa base. Luego Spring Boot inicia usando grip_app. Hibernate crea las tablas y se insertan ocho productos si la tabla productos esta vacia.
 
-## Iniciar frontend
+La cuenta administrativa necesita permisos CREATE, CREATE USER y GRANT OPTION. Si la universidad restringe estas operaciones, solicita a informatica una cuenta autorizada. No es posible omitir los permisos del servidor.
 
-En otra ventana de PowerShell, dentro de la carpeta del frontend:
+En otra ventana de PowerShell, dentro de sneaker-store:
 
 ```powershell
 npm ci
@@ -38,15 +33,8 @@ npm run dev
 ```
 
 Tienda: http://localhost:5173
+Swagger: http://127.0.0.1:8080/swagger-ui/index.html
 
-## Siguientes ejecuciones
+En los siguientes inicios, repite el bloque de backend y ejecuta npm run dev en frontend. No se requiere SQL manual ni se eliminan los datos.
 
-No volver a ejecutar el script SQL. Iniciar MySQL, backend y frontend. La base, las cuentas, las ventas y el inventario existentes se conservan. No eliminar la base desde Workbench si se desea mantener los datos.
-
-## Consideraciones
-
-- Si MySQL usa un puerto diferente, cambiar `GRIP_DB_PORT`.
-- Si el usuario `grip_app` ya existe, `CREATE USER IF NOT EXISTS` no modifica su contraseña.
-- El permiso global `CREATE` del usuario de aplicación se concede para facilitar la creación automática de la base en desarrollo local. No exponer ese usuario a Internet.
-- Las cuentas iniciales de administrador y vendedor se crean solo si aún no existen y se proporcionan sus variables de contraseña.
-- Cada computador mantiene una base local independiente.
+Las claves 12345678 son solo para demostracion local. No publicar credenciales reales ni utilizarlas en produccion.
