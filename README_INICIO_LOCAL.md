@@ -14,10 +14,10 @@ $env:GRIP_DB_PORT = "3306"
 $env:GRIP_DB_NAME = "grip_sneaker_store"
 $env:GRIP_DB_ADMIN_USER = "root"
 $env:GRIP_DB_ADMIN_PASSWORD = Read-Host 'Clave administrativa MySQL'
-$env:GRIP_DB_PASSWORD = "12345678"
-$env:GRIP_JWT_SECRET = "GRIP_SECRET_KEY_2026_FULLSTACK_EVALUACION_3"
-$env:GRIP_ADMIN_PASSWORD = "12345678"
-$env:GRIP_VENDEDOR_PASSWORD = "12345678"
+$env:GRIP_DB_PASSWORD = Read-Host 'Clave para el usuario grip_app (minimo 8 caracteres)'
+$env:GRIP_JWT_SECRET = Read-Host 'Clave JWT aleatoria (32 caracteres o mas)'
+$env:GRIP_ADMIN_PASSWORD = Read-Host 'Clave de ana.perez@duoc.cl (minimo 8 caracteres)'
+$env:GRIP_VENDEDOR_PASSWORD = Read-Host 'Clave de carlos.soto@duoc.cl (minimo 8 caracteres)'
 .\mvnw.cmd spring-boot:run
 ```
 
@@ -37,4 +37,4 @@ Swagger: http://127.0.0.1:8080/swagger-ui/index.html
 
 En los siguientes inicios, repite el bloque de backend y ejecuta npm run dev en frontend. No se requiere SQL manual ni se eliminan los datos.
 
-Las claves 12345678 son solo para demostracion local. No publicar credenciales reales ni utilizarlas en produccion.
+Las claves se ingresan al ejecutar y no quedan escritas en archivos versionados. No publicar credenciales ni reutilizar en otros entornos la clave JWT que aparecia en versiones anteriores de este archivo.

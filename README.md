@@ -46,3 +46,9 @@ No es necesario ejecutar SQL manual ni abrir Workbench. Inicia MySQL y vuelve a 
 ```
 
 No subir contraseñas, tokens ni secretos reales al repositorio.
+
+## Despliegue con Docker y arquitectura de microservicios
+
+- `compose.yaml`, `Dockerfile` y `.env.example` permiten ejecutar este backend y MySQL con Docker Compose (plan B, verificado en AWS EC2). Las claves van solo en un archivo `.env` no versionado.
+- La arquitectura usada en el Examen Final está en [grip-microservicios](https://github.com/benjaminbrown19/grip-microservicios): este backend dividido en `ms-usuarios`, `ms-productos` y `ms-ordenes`, con API Gateway Nginx, desplegado en AWS EC2.
+- La entrega de la Evaluación 3 queda marcada con la etiqueta `ev3-entregada`.
