@@ -1,0 +1,49 @@
+# GRIP Sneaker Store - backend + MySQL con Docker Compose.
+# Uso en EC2: copiar .env.example como .env, completar las claves y ejecutar:
+#   docker compose up --build -d
+# Los valores reales se leen desde .env (excluido de Git).
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Falta MYSQL_ROOT_PASSWORD en .env}
+      MYSQL_DATABASE: ${GRIP_DB_NAME:-grip_sneaker_store}
+      # Usuario de la aplicacion con host '%': permite conexiones desde el contenedor backend.
+      MYSQL_USER: grip_app
+      MYSQL_PASSWORD: ${GRIP_DB_PASSWORD:?Falta GRIP_DB_PASSWORD en .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+    # Sin "ports": MySQL NO queda expuesto a Internet, solo a la red interna de Docker.
+
+  backend:
+    build: .
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Dentro del contenedor debe escuchar en todas las interfaces (local sigue usando 127.0.0.1).
+      SERVER_ADDRESS: 0.0.0.0
+      GRIP_DB_HOST: mysql
+      GRIP_DB_PORT: 3306
+      GRIP_DB_NAME: ${GRIP_DB_NAME:-grip_sneaker_store}
+      # MysqlBootstrapper (codigo existente) requiere una cuenta administrativa.
+      GRIP_DB_ADMIN_USER: root
+      GRIP_DB_ADMIN_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      GRIP_DB_PASSWORD: ${GRIP_DB_PASSWORD}
+      GRIP_JWT_SECRET: ${GRIP_JWT_SECRET:?Falta GRIP_JWT_SECRET en .env}
+      GRIP_ADMIN_PASSWORD: ${GRIP_ADMIN_PASSWORD:?Falta GRIP_ADMIN_PASSWORD en .env}
+      GRIP_VENDEDOR_PASSWORD: ${GRIP_VENDEDOR_PASSWORD:?Falta GRIP_VENDEDOR_PASSWORD en .env}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
